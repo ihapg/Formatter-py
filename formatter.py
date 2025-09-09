@@ -9,35 +9,36 @@ import editor
 
 items_selection = []
 items_filtered = []
+items_mod = []
 
-input_path = os.path.join('data_backup', 'StockItem-2025-07-10(1).json')
-output_path = os.path.join('tests', 'nums_test.json')
+input_path = os.path.join('data', 'StockItem-2025-09-09(1).json')
+output_path = os.path.join('tests', 'StockItems-filter-20250909(1).json')
 
-nums_path = os.path.join('tests', 'numeros.txt')
+nums_path = os.path.join('tests', 'serial_sensores_batch.json')
 nums = []
 
-test_input_path = os.path.join('tests', 'nums_test.json')
-test_output_path = os.path.join('tests', 'StockItems-nums_mod-20250715.json')
+test_input_path = os.path.join('data', 'serial_sensores_batch.csv')
+test_output_path = os.path.join('tests', 'serial_sensores_batch.json')
+
+mod_output_path = os.path.join('results', 'StockItems-mod_batch-20250909.json')
 
 # ::: funciones :::
 # en editor.py
 
-# ::: ejecucion :::
+# ::: Preparacion de archivos :::
+
+editor.csv_to_json(test_input_path, test_output_path)
 
 items_selection = editor.load(input_path)
-nums = editor.leer_numeros_txt(nums_path)
-
-items_filtered = editor.filter_by_atr(items_selection, "Stock Item ID", nums)
-editor.sorter(items_filtered, 'Stock Item ID', False)
+items_filtered = editor.filter_by_atr(items_selection, 'ID de Parte', [1529])
+nums = editor.load(nums_path)
 
 editor.save(items_filtered, output_path, True)
 
-# __ Modificacion del archivo __
-items_selection = editor.load(test_input_path)
-# items_filtered = editor.get_field_values(items_selection, "Installed In")
-# editor.save(items_filtered, test_output_path, False)
-# print(items_filtered)
-items_filtered = editor.mod_fields(items_selection, "Installed In", "")
-editor.save(items_filtered, test_output_path, True)
 
-print(f"Archivo generado: {test_output_path}")
+# ::: Modificacion de archivos :::
+
+items_mod = editor.mod_batch_serial_value(items_filtered, 'Lote', 'Número de serie', nums)
+editor.save(items_mod, mod_output_path, True)
+
+print(f"Archivos generados: \n\tTest: {test_output_path}\n\tResult: {output_path}\n\tMod: {mod_output_path}")

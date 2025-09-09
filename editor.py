@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 
 ruta = os.path.join('tests', 'numeros.txt')
 
@@ -43,14 +44,28 @@ def filter_by_atr(array, atr, values):
     return filtered
     # return [item for item in array if item.get(atr) == value]
 
-# __ Modificar campos __
-def mod_fields(array, field, value):
+# __ Modificar campo __
+def mod_field(array, field, values):
     array_mod = []
     for item in array:
         if field in item:
-            item[field] = value
+            # Modificacion para pasar array de valores y poder modificar 1:1
+            # cambios en parametro value>values y values.pop(0) para ir sacando el primer elemento a la par que avanza el bucle de items
+            item[field] = values.pop(0)
         array_mod.append(item)
     
+    return array_mod
+
+# __ Modificar campo Batch filtrando por Serial __
+def mod_batch_serial_value(items, batch_name, serial_name, values):
+    array_mod = []
+    for item in items:
+        if batch_name in item and serial_name in item:
+            for value in values:
+                if item[serial_name] == value['Serial']:
+                    item[batch_name] = value['Batch']
+                    array_mod.append(item)
+
     return array_mod
 
 # __ Obtener valores de un campo __
@@ -64,25 +79,35 @@ def get_field_values(array, field):
     return array_values
 
 # __ Generar números __
-def generar_txt_numeros(ruta_archivo, inicio, fin):
+def num_generator_txt(ruta_archivo, inicio, fin):
     with open(ruta_archivo, 'w', encoding='utf-8') as txt:
         for numero in range(inicio, fin + 1):
             txt.write(f"{numero}\n")
 
 # __ Pasar números de .txt a array __
-def leer_numeros_txt(ruta_archivo):
+def num_reader_txt(ruta_archivo):
     numeros = []
     with open(ruta_archivo, 'r', encoding='utf-8') as f:
         for linea in f:
             numero = linea.strip()
             if numero:  # Evita líneas vacías
-                numeros.append(int(numero))
+                # numeros.append(int(numero))
+                numeros.append(numero) # Para números en formato texto
     return numeros
 
+# __ Convertir CSV (delimitado por ;) a JSON __
+def csv_to_json(ruta_csv, ruta_json):
+    datos = []
+    with open(ruta_csv, 'r', encoding='utf-8') as csv_file:
+        lector = csv.DictReader(csv_file, delimiter=';')
+        for fila in lector:
+            datos.append(dict(fila))
+    with open(ruta_json, 'w', encoding='utf-8') as output_file:
+        json.dump(datos, output_file, ensure_ascii=False, indent=2)
+
 # ::: ejecucion pruebas :::
-# generar_txt_numeros(ruta, 3900, 4030)
-# print(leer_numeros_txt(ruta))
+
+
 
 # Ejemplo de uso:
-# numeros = leer_numeros_txt(ruta)
-# print(numeros)
+# csv_a_json('data/serial_sensores_batch.csv', 'data/serial_sensores_batch.json')
